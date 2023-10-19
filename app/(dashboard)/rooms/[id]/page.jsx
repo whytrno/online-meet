@@ -1,13 +1,15 @@
 "use client"
 
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLoading, useMeetingId } from "@/zustand/state";
 import { useMeeting } from "@videosdk.live/react-sdk";
 import { ParticipantView } from "@/components/rooms/participant-view";
 import { useRouter } from "next/navigation";
 import { PresenterView } from "@/components/rooms/presenter-view";
+import { useUser } from "@clerk/nextjs";
+
 function onParticipantLeft(participant) {
     console.log(" onParticipantLeft", participant);
 }
@@ -16,6 +18,8 @@ const RoomPage = ({ params }) => {
     const { meetingId, setMeetingId } = useMeetingId()
     const { toast } = useToast();
     const router = useRouter()
+    const { user } = useUser();
+    const [uniqueParticipants, setUniqueParticipants] = useState([])
 
     if (!params.id) {
         router.push('/dashboard')
@@ -30,6 +34,27 @@ const RoomPage = ({ params }) => {
     const { join, participants, presenterId } = useMeeting({ onParticipantLeft })
 
     useEffect(() => {
+        if (participants.size > 0) {
+            const seenDisplayNames = new Map();
+            const uniqueParticipants = [];
+
+            participants.forEach((participant) => {
+                const displayName = participant.displayName;
+
+                if (!seenDisplayNames.has(displayName)) {
+                    seenDisplayNames.set(displayName, true);
+                    uniqueParticipants.push(participant);
+                }
+            });
+
+            setUniqueParticipants(uniqueParticipants)
+        }
+    }, [participants]);
+
+
+
+
+    useEffect(() => {
         if (meetingId) {
             join()
         } else {
@@ -40,9 +65,21 @@ const RoomPage = ({ params }) => {
             setIsLoading(false);
         }, 1500);
 
+        navigator.mediaDevices
+            .getUserMedia({ audio: true, video: true })
+            .then((stream) => {
+                console.log("Access to microphone and camera granted.");
+                // You can use the `stream` for further actions, like displaying it in a video element.
+            })
+            .catch((error) => {
+                console.error("Error accessing microphone and camera:", error);
+                // Handle the error, for example, by showing a message to the user.
+            });
+
         return () => {
             clearTimeout(timeoutId);
         };
+
     }, [meetingId]);
 
     return (
@@ -53,9 +90,9 @@ const RoomPage = ({ params }) => {
             </div>
 
             <div
-                className={`h-full gap-5 ${presenterId ? `col-span-1 grid grid-rows-${participants.size}` : `col-span-3 grid grid-cols-${participants.size}`}`}>
+                className={`h-full gap-5 ${presenterId ? `col-span-1 grid grid-rows-${uniqueParticipants.size}` : `col-span-3 grid grid-cols-${uniqueParticipants.size}`}`}>
                 {
-                    [...participants.values()].map((participant, index) => (
+                    [...uniqueParticipants.values()].map((participant, index) => (
                         <ParticipantView key={index} participant={participant} />
                     ))
                 }
