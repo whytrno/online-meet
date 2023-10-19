@@ -51,8 +51,9 @@ const RoomPage = ({ params }) => {
         }
     }, [participants]);
 
-
-
+    useEffect(() => {
+        router.refresh();
+    }, []);
 
     useEffect(() => {
         if (meetingId) {
