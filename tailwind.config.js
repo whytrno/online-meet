@@ -22,6 +22,7 @@ module.exports = {
                 cGrayPrimary: "#BCBCD3",
                 cGraySecondary: "#F5F5F5",
                 cBlack: "#17171F",
+                cBgIcon: "#E7E3FA",
 
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",

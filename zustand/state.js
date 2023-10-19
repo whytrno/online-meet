@@ -6,3 +6,17 @@ export const useIsLoading = create((set) => ({
         set({isLoading: isLoading})
     }
 }))
+
+export const useMeetingId = create((set) => ({
+    meetingId: null,
+    setMeetingId: (meetingId) => {
+        set({meetingId: meetingId})
+    }
+}))
+
+export const useUserAuth = create((set) => ({
+    userAuth: null,
+    setUserAuth: (userAuth) => {
+        set({userAuth: userAuth})
+    }
+}))

@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { useIsLoading } from "@/zustand/state";
+import { useIsLoading, useMeetingId } from "@/zustand/state";
 import {
     Dialog,
     DialogContent,
@@ -10,24 +10,49 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+import { authToken, createMeeting } from "@/components/videosdk-api";
+import { useEffect, useState } from "react";
 
 export const RoomMenu = () => {
     const { setIsLoading } = useIsLoading()
+    const router = useRouter();
+    const { meetingId, setMeetingId } = useMeetingId()
+    const [meetingIdInput, setMeetingIdInput] = useState("")
 
-    const createRoom = () => {
+    const createRoom = async (id) => {
         setIsLoading(true)
+
+        const meetingId = id == null ? await createMeeting({ token: authToken }) : id;
+        setMeetingId(meetingId);
+
+        if (meetingId) {
+            router.push(`/rooms/${meetingId}`)
+        }
     }
+
+    const joinRoom = async () => {
+        setIsLoading(true)
+        setMeetingId(meetingIdInput);
+    }
+
+    useEffect(() => {
+        if (meetingId) {
+            router.push(`/rooms/${meetingId}`)
+        }
+    }, [meetingId]);
 
     const menus = [
         {
             icon: "majesticons:video",
             label: "Create Room",
-            modal: <CreateModal />
+            modal: <CreateModal createRoom={createRoom} />
         },
         {
             icon: "majesticons:video-plus",
             label: "Join Room",
-            modal: <JoinModal createRoom={createRoom} />
+            modal: <JoinModal meetingIdInput={meetingIdInput} setMeetingIdInput={setMeetingIdInput}
+                joinRoom={joinRoom} />
         }
     ]
 
@@ -61,27 +86,36 @@ const CreateModal = ({ createRoom }) => {
             <DialogHeader>
                 <DialogTitle>Create Room</DialogTitle>
                 <DialogDescription>
-                    You have 5 minutes free trial, after that you will cost 1 coin per minutes.
-                    Continue?
+                    Are You sure to create a new room?
                 </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-                <Button type="submit">Submit</Button>
+                <Button onClick={() => createRoom()} className="bg-cPrimary hover:bg-cPrimary/80">Submit</Button>
             </DialogFooter>
         </DialogContent>
     )
 }
 
-const JoinModal = () => {
+const JoinModal = ({ meetingIdInput, setMeetingIdInput, joinRoom }) => {
     return (
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Join Room</DialogTitle>
-                <DialogDescription>
-                    You have 5 minutes free trial, after that you will cost 1 coin per minutes.
-                    Continue?
-                </DialogDescription>
             </DialogHeader>
+            <p>Enter meeting ID to join</p>
+
+            <input value={meetingIdInput} onChange={(e) => setMeetingIdInput(e.target.value)} type="text"
+                className="active:ring-0 active:border-none border border-cBlack w-full py-4 px-4 rounded-lg" />
+            <DialogFooter>
+                {
+                    meetingIdInput.length <= 0 ? (
+                        <Button>Submit</Button>
+                    ) : (
+                        <Button onClick={() => joinRoom(meetingIdInput)}
+                            className="bg-cPrimary hover:bg-cPrimary/80">Submit</Button>
+                    )
+                }
+            </DialogFooter>
         </DialogContent>
     )
 }

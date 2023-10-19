@@ -1,4 +1,5 @@
-import {Icon} from "@iconify/react";
+import { Icon } from "@iconify/react";
+import { UserButton } from "@clerk/nextjs";
 
 const Sidebar = () => {
     const sidebarItems = [
@@ -26,14 +27,14 @@ const Sidebar = () => {
     return (
         <>
             <div className="flex flex-col justify-between items-center h-full text-cGrayPrimary w-full">
-                <Icon icon="raphael:github" className="text-5xl text-cBlack"/>
+                <Icon icon="raphael:github" className="text-5xl text-cBlack" />
 
                 <div className="flex flex-col justify-between gap-y-2 w-full">
                     {
                         sidebarItems.map((item, index) => (
                             <div key={index}
-                                 className="flex justify-center py-4 relative cursor-pointer w-full group h-full">
-                                <Icon icon={item.icon} className="text-2xl group-hover:text-cPrimary"/>
+                                className="flex justify-center py-4 relative cursor-pointer w-full group h-full">
+                                <Icon icon={item.icon} className="text-2xl group-hover:text-cPrimary" />
                             </div>
                         ))
                     }
@@ -42,7 +43,8 @@ const Sidebar = () => {
                 <div>
                     <div
                         className="flex justify-center py-4 relative cursor-pointer w-full group h-full">
-                        <Icon icon="majesticons:logout" className="text-2xl group-hover:text-cPrimary"/>
+                        {/*<Icon icon="majesticons:logout" className="text-2xl group-hover:text-cPrimary"/>*/}
+                        <UserButton afterSignOutUrl="/" />
                     </div>
                 </div>
             </div>
